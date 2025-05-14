@@ -1,0 +1,5 @@
+[tools]
+node = "22"
+task = "latest"
+python = "3.13"
+poetry = "latest"

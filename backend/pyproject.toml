@@ -1,0 +1,82 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Your Name",email = "you@example.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi (>=0.115.12,<0.116.0)",
+    "uvicorn[standard] (>=0.29.0,<0.30.0)",
+    "gunicorn (>=23.0.0,<24.0.0)",
+    "boto3 (>=1.28.0,<2.0.0)",
+    "pydantic (>=2.0.0,<3.0.0)",
+    "pydantic-settings (>=2.9.1,<3.0.0)",
+    "ruff (>=0.11.9,<0.12.0)"
+]
+
+[tool.poetry]
+package-mode = false
+packages = [{include = "app"}]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+target-version = "py312"
+
+exclude = [
+    "tests", 
+    ".git",
+    ".git-rewrite",
+    ".mypy_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "build",
+    "venv",
+]
+line-length = 120
+lint.select = ["ALL"]
+lint.fixable = ["ALL"]
+lint.ignore = [
+    "RUF001", # ambiguous-unicode-character-string 全角ハイフンとかスラッシュとか使いたいのでignore
+    "RUF002", # ambiguous-unicode-character-docstring 同上
+    "RUF003", # ambiguous-unicode-character-comment 同上
+    "ERA001",  # Found commented-out code コメントアウトしたい場合もあるのでignore
+    "INP001",  # implicit namespace package. Add an `__init__.py`.
+    "ANN101",  # Missing type annotation for self in method
+    "D100",  # Missing docstring in public module
+    "D101",  # Missing docstring in public class
+    "D102",  # Missing docstring in public method
+    "D103",  # Missing docstring in public function
+    "D104",  # Missing docstring in public package
+    "D107",  # Missing docstring in __init__
+    "D400",  # First line should end with a period
+    "D401",  # First line should be in imperative mood
+    "D415",  # First line should end with a period, question mark, or exclamation point
+    "TD002", # missing-todo-comment TODOコメントにIssue紐づけはやってられない
+    "TD003", # missing-todo-link TODOコメントにIssue紐づけはやってられない
+    "TD004", # Missing colon in TODO
+    "FIX001", # line-contains-fixme
+    "FIX002", # line-contains-todo
+    "FIX003", # line-contains-xxx
+    # === 以下、ALLそのままだと勝手に警告出たりConflictするルールの調整 ===
+    "D203", # 1 blank line required before class docstring
+    "D213", # Multi-line docstring summary should start at the second line
+    "COM812", # Missing trailing comma
+    "ISC001", # No implicit string concatenation
+]
+
+# FastAPIのDependsが 'function-call-in-default-argument (B008)'に引っかかるので除外
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.params.Depends", "fastapi.Query", "fastapi.params.Query"]
+
+# パス変数として必要だが使用しない場合の警告を抑制
+[tool.ruff.lint.per-file-ignores]
+"main.py" = ["ARG001"]

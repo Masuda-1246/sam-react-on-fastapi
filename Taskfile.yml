@@ -1,0 +1,102 @@
+version: '3'
+
+tasks:
+  setup/frontend:
+    desc: Build the frontend
+    dir: frontend
+    cmds:
+      - npm install
+      - npm run build:backend
+  setup/backend:
+    desc: Build the backend
+    dir: backend
+    cmds:
+      - poetry install
+  setup/dynamodb:
+    desc: Build the dynamodb
+    cmds:
+      - docker-compose up -d
+  setup:
+    desc: Build the frontend and backend
+    deps:
+      - setup/frontend
+      - setup/backend
+      - setup/dynamodb
+
+  serve/frontend:
+    desc: Serve the frontend
+    dir: frontend
+    cmds:
+      - npm run dev
+  serve/backend:
+    desc: Serve the backend
+    dir: backend
+    cmds:
+      - poetry run python main.py
+  serve:
+    desc: Serve the frontend and backend
+    deps:
+      - serve/frontend
+      - serve/backend
+
+  docker/build:
+    desc: Build the docker image
+    cmds:
+      - docker build -t fastapi-react-app .
+  docker/run:
+    desc: Run the docker image
+    cmds:
+      - docker run -p 8080:8080 fastapi-react-app
+  docker/stop:
+    desc: Stop the docker image
+    cmds:
+      - docker stop fastapi-react-app
+  docker:
+    desc: Build and run the docker image
+    deps:
+      - docker/build
+      - docker/run
+
+  openapi/generate:
+    desc: Generate the openapi
+    dir: backend
+    cmds:
+      - poetry run python -m scripts.export_openapi
+  orval/generate:
+    desc: Generate the orval
+    dir: frontend
+    cmds:
+      - npx orval
+  generate/api-client:
+    desc: Generate the api client
+    deps:
+      - openapi/generate
+      - orval/generate
+  
+  docker-compose/up:
+    desc: Start the docker compose
+    cmds:
+      - docker-compose up -d --build
+  docker-compose/down:
+    desc: Stop the docker compose
+    cmds:
+      - docker-compose down
+  
+  sam/build:
+    desc: Build the sam
+    cmds:
+      - sam build --use-container
+  sam/deploy:
+    desc: Deploy the sam
+    deps:
+      - sam/build
+    cmds:
+      - sam deploy
+  sam/deploy/guided:
+    desc: Deploy the sam with guided
+    cmds:
+      - sam deploy --guided
+  sam/remove:
+    desc: Remove the sam
+    cmds:
+      - sam delete
