@@ -1,4 +1,3 @@
-import os
 import secrets
 from typing import Annotated
 
@@ -9,7 +8,6 @@ from app.core.config import settings
 from app.core.db import DynamoDBClient
 from app.core.models import TodoCreate, TodoResponse, TodoUpdate, generate_id
 
-
 router = APIRouter(prefix="/api/todos", tags=["todos"])
 
 # 認証関連
@@ -17,10 +15,8 @@ basic = HTTPBasic()
 
 
 def get_current_username(credentials: HTTPBasicCredentials = Depends(basic)) -> str:
-    correct_username = os.getenv("BASIC_AUTH_USERNAME")
-    correct_password = os.getenv("BASIC_AUTH_PASSWORD")
-    correct_username = secrets.compare_digest(credentials.username, correct_username)
-    correct_password = secrets.compare_digest(credentials.password, correct_password)
+    correct_username = secrets.compare_digest(credentials.username, settings.BASIC_AUTH_USERNAME)
+    correct_password = secrets.compare_digest(credentials.password, settings.BASIC_AUTH_PASSWORD)
     if not (correct_username and correct_password):
         raise HTTPException(
             status_code=401,
