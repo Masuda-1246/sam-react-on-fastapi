@@ -1,4 +1,4 @@
-#　sam-practice-with-react-on-fastapi/
+# sam-react-on-fastapi
 
 ## アーキテクチャ図
 ![image](./docs/arch.png)
