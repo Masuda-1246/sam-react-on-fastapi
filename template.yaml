@@ -1,62 +1,61 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Transform: AWS::Serverless-2016-10-31
+AWSTemplateFormatVersion: '2010-09-09'  # CloudFormationテンプレートのバージョン
+Transform: AWS::Serverless-2016-10-31  # SAM変換の指定
 Description: >
-  python3.8
-
+  python3.12
   Sample SAM Template for FastAPI
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
-Globals:
+Globals:  # すべての関数に適用されるグローバル設定
   Function:
-    Timeout: 10
+    Timeout: 10  # 関数のタイムアウト設定（秒）
 
-Resources:
-  FastAPIFunction:
-    Type: AWS::Serverless::Function
+Resources:  # AWSリソースの定義セクション
+  FastAPIFunction:  # FastAPIを実行するLambda関数
+    Type: AWS::Serverless::Function  # SAMのServerless Function型
     Properties:
-      PackageType: Image
-      MemorySize: 1024
+      PackageType: Image  # コンテナイメージとしてデプロイ
+      MemorySize: 1024  # 関数のメモリサイズ（MB）
       Events:
-        ApiEvents:
-          Type: HttpApi
-      Environment:
+        ApiEvents:  # API Gateway経由でのイベント設定
+          Type: HttpApi  # HTTP APIタイプ
+      Environment:  # 環境変数の設定
         Variables:
-          DYNAMODB_TABLE_NAME: !Ref Table
-          TABLE_TABLE_ARN: !GetAtt Table.Arn
-          APP_ENV: stg
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref Table
-        - Statement:
+          DYNAMODB_TABLE_NAME: !Ref Table  # DynamoDBテーブル名を参照
+          TABLE_TABLE_ARN: !GetAtt Table.Arn  # テーブルのARNを取得
+          APP_ENV: stg  # アプリケーション環境（ステージング）
+      Policies:  # Lambda関数に割り当てるIAMポリシー
+        - DynamoDBCrudPolicy:  # DynamoDBへのCRUD操作権限
+            TableName: !Ref Table  # 対象テーブル名
+        - Statement:  # 追加のポリシー文
             - Effect: Allow
               Action:
-                - dynamodb:*
-              Resource: '*'
-    Metadata:
-      DockerContext: .
-      Dockerfile: Dockerfile
-      DockerTag: python3.12-v1
-    
-  Table:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      AttributeDefinitions:
-        - AttributeName: id
-          AttributeType: S
-      BillingMode: PAY_PER_REQUEST
-      KeySchema:
-        - AttributeName: id
-          KeyType: HASH
-      StreamSpecification:
-        StreamViewType: NEW_AND_OLD_IMAGES
+                - dynamodb:*  # DynamoDBに対するすべての操作を許可
+              Resource: '*'  # すべてのDynamoDBリソースに対して
+    Metadata:  # Dockerビルド関連のメタデータ
+      DockerContext: .  # Dockerコンテキストのルートディレクトリ
+      Dockerfile: Dockerfile  # 使用するDockerfileの指定
+      DockerTag: python3.12-v1  # Dockerイメージのタグ
 
-Outputs:
+  Table:  # DynamoDBテーブルの定義
+    Type: AWS::DynamoDB::Table  # DynamoDBテーブルリソース
+    Properties:
+      AttributeDefinitions:  # テーブル属性の定義
+        - AttributeName: id
+          AttributeType: S  # 文字列型
+      BillingMode: PAY_PER_REQUEST  # オンデマンド課金モード
+      KeySchema:  # キースキーマの定義
+        - AttributeName: id
+          KeyType: HASH  # プライマリキー（ハッシュキー）
+      StreamSpecification:  # DynamoDBストリームの設定
+        StreamViewType: NEW_AND_OLD_IMAGES  # 変更前後の両方のイメージを含む
+
+Outputs:  # スタック出力値の定義
   FastAPIURL:
-    Description: "API Gateway endpoint URL for Prod stage for FastAPI function"
-    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/"
+    Description: "API Gateway endpoint URL for Prod stage for FastAPI function"  # APIエンドポイントの説明
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/"  # エンドポイントURL
   FastAPIFunction:
-    Description: "FastAPI Lambda Function ARN"
-    Value: !GetAtt FastAPIFunction.Arn
+    Description: "FastAPI Lambda Function ARN"  # Lambda関数ARNの説明
+    Value: !GetAtt FastAPIFunction.Arn  # Lambda関数のARN
   FastAPIIamRole:
-    Description: "Implicit IAM Role created for FastAPI function"
-    Value: !GetAtt FastAPIFunctionRole.Arn
+    Description: "Implicit IAM Role created for FastAPI function"  # IAMロールの説明
+    Value: !GetAtt FastAPIFunctionRole.Arn  # Lambda関数に自動生成されたIAMロールのARN
